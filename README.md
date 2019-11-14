@@ -1,8 +1,8 @@
 # 112-prog3
-This is a Python interpreter for a made-up language called Tiny Language.\n
+This is a Python interpreter for a made-up language called Tiny Language.
 
-Created by:\n
+### Created by:
 
-Prescott White\n
-Computer Science, B.S.\n
-University of California, Santa Cruz
+Prescott White
+
+Computer Science, B.S.  **|**  University of California, Santa Cruz
