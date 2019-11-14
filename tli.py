@@ -2,6 +2,14 @@
 import fileinput
 import sys
 
+# read 1st argument when calling script
+fileName = sys.argv[1]
+
+# open file with given filename
+file = open(fileName, "r")
+for x in file:
+	print(x)
+
 # used to store a parsed TL expressions which are
 # constant numbers, constant strings, variable names, and binary expressions
 class Expr :
