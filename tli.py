@@ -68,16 +68,12 @@ for x in file:
     keyword = lineParsed[0 + labelIndex]
     if keyword == "let":
         addStmt(stmtList, lineNum, keyword, lineParsed, (1 + labelIndex), numTokens)
-        # stmtList.append(Stmt(lineNum, keyword, lineParsed[(1 + labelIndex):(numTokens)]))
     elif keyword == "if":
         addStmt(stmtList, lineNum, keyword, lineParsed, (1 + labelIndex), numTokens)
-        # stmtList.append(Stmt(lineNum, keyword, lineParsed[(1 + labelIndex):(numTokens)]))
     elif keyword == "print":
         addStmt(stmtList, lineNum, keyword, lineParsed, (1 + labelIndex), numTokens)
-        # stmtList.append(Stmt(lineNum, keyword, lineParsed[(1 + labelIndex):(numTokens)]))
     elif keyword == "input":
         addStmt(stmtList, lineNum, keyword, lineParsed, (1 + labelIndex), numTokens)
-        # stmtList.append(Stmt(lineNum, keyword, lineParsed[(1 + labelIndex):(numTokens)]))
 	
 for x in symTable:
     print(str(symTable[x]))
