@@ -21,11 +21,25 @@ class Expr:
 
     # evaluate this expression given the environment of the symTable
     def eval(self, symTable, labelTable):
-        if (self.operator == "num") or (self.operator == "str"):
-            return self.op1
+        if (self.operator == "num"):
+            return float(self.op1)
+        elif (self.operator == "str"):
+            return str(self.op1)
         elif self.operator == "var":
             return symTable[self.op1]
-        elif self.operator == "+":
+
+        # if variable is being used in expression
+        if not(isNumber(self.op1)):
+            self.op1 = float(symTable[self.op1])
+        else:
+            self.op1 = float(self.op1)
+        if not(isNumber(self.op2)):
+            self.op2 = float(symTable[self.op2])
+        else:
+            self.op2 = float(self.op2)
+        
+
+        if self.operator == "+":
             return (float(self.op1) + float(self.op2))
         elif self.operator == "-":
             return (float(self.op1) - float(self.op2))
@@ -99,7 +113,6 @@ class Stmt:
 def parseFile(file, labelTable, stmtList):
     lineNum = 0
     for x in file:
-        labelOffset = 0
         lineNum += 1
         lineParsed = x.split()
         exprList = []
@@ -111,40 +124,35 @@ def parseFile(file, labelTable, stmtList):
             if lineParsed[0].endswith(':'):
                 # store label without colon
                 labelTable[str(lineParsed[0][:-1])] = lineNum
-                # lineParsed = lineParsed[1:]
-                # rest of statement will start one index over
-                labelOffset = 1
+                lineParsed = lineParsed[1:]
         
-            keyword = lineParsed[labelOffset]
+            keyword = lineParsed[0]
         
             if keyword == "let":
                 lineParsed.remove("let")
                 lineParsed.remove("=")
                 numTokens = len(lineParsed)
                 # add variable name
-                exprList.append(Expr(lineParsed[labelOffset], "var"))
+                exprList.append(Expr(lineParsed[0], "var"))
                 # if form is 'let variable = value' where value is either float or string
-                if (numTokens - labelOffset) == 2:
-                    if isNumber(lineParsed[labelOffset + 1]):
-                        exprList.append(Expr(lineParsed[labelOffset + 1], "num"))
-                    else:
-                        exprList.append(Expr(lineParsed[labelOffset + 1], "str"))
+                if (numTokens) == 2:
+                    exprList.append(Expr(lineParsed[1], "num"))
                 # if form is 'let variable = value operator value' where '=' is removed and value is either float or variable
-                elif (numTokens - labelOffset) == 4:
-                    exprList.append(Expr(lineParsed[labelOffset + 1], lineParsed[labelOffset + 2], lineParsed[labelOffset + 3]))
+                elif (numTokens) == 4:
+                    exprList.append(Expr(lineParsed[1], lineParsed[2], lineParsed[3]))
                 stmtList.append(Stmt(lineNum, keyword, exprList))
         
             elif keyword == "if":
                 lineParsed.remove("if")
                 lineParsed.remove("goto")
                 numTokens = len(lineParsed)
-                if (numTokens - labelOffset) == 2:
-                    if isNumber(lineParsed[labelOffset]):
-                        exprList.append(Expr(lineParsed[labelOffset], "num"))
+                if (numTokens) == 2:
+                    if isNumber(lineParsed[0]):
+                        exprList.append(Expr(lineParsed[0], "num"))
                     else:
-                        exprList.append(Expr(lineParsed[labelOffset], "var"))
-                elif (numTokens - labelOffset) == 4:
-                    exprList.append(Expr(lineParsed[labelOffset], lineParsed[labelOffset + 1], lineParsed[labelOffset + 2]))
+                        exprList.append(Expr(lineParsed[0], "var"))
+                elif (numTokens) == 4:
+                    exprList.append(Expr(lineParsed[0], lineParsed[1], lineParsed[2]))
                 # add label to end of statement, this is the label to goto if expression is true
                 exprList.append(Expr(lineParsed[-1], "str"))
                 stmtList.append(Stmt(lineNum, keyword, exprList))
