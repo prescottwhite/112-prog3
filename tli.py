@@ -23,42 +23,42 @@ class Expr:
     def eval(self, symTable, labelTable):
         if (self.operator == "num") or (self.operator == "str"):
             return self.op1
-        if self.operator == "var":
+        elif self.operator == "var":
             return symTable[self.op1]
-        if self.operator == "+":
+        elif self.operator == "+":
             return (float(self.op1) + float(self.op2))
-        if self.operator == "-":
+        elif self.operator == "-":
             return (float(self.op1) - float(self.op2))
-        if self.operator == "*":
+        elif self.operator == "*":
             return (float(self.op1) * float(self.op2))
-        if self.operator == "/":
+        elif self.operator == "/":
             return (float(self.op1) / float(self.op2))
-        if self.operator == "==":
+        elif self.operator == "==":
             if (self.op1 == self.op2):
                 return 1
             else:
                 return 0
-        if self.operator == "<":
+        elif self.operator == "<":
             if (self.op1 < self.op2):
                 return 1
             else:
                 return 0
-        if self.operator == ">":
+        elif self.operator == ">":
             if (self.op1 > self.op2):
                 return 1
             else:
                 return 0
-        if self.operator == "<=":
+        elif self.operator == "<=":
             if (self.op1 <= self.op2):
                 return 1
             else:
                 return 0
-        if self.operator == ">=":
+        elif self.operator == ">=":
             if (self.op1 >= self.op2):
                 return 1
             else:
                 return 0
-        if self.operator == "!=":
+        elif self.operator == "!=":
             if (self.op1 != self.op2):
                 return 1
             else:
@@ -79,15 +79,15 @@ class Stmt:
         return self.keyword + others
 
     # perform/execute this statement given the environment of the symTable
-    def perform(self, symTable, labelTable):
+    def perform(self, symTable, labelTable, stmtList):
         if self.keyword == "let":
             symTable[str(self.exprs[0])] = self.exprs[1].eval(symTable, labelTable)
 
         if self.keyword == "if":
             if (self.exprs[0].eval(symTable, labelTable)) == 0:
-                executeStmts(lineNum + 1, symTable, labelTable, stmtList)
+                executeStmts(self.lineNum + 1, symTable, labelTable, stmtList)
             else:
-                executeStmts(labelTable[self.exprs[-1]], symTable, labelTable, stmtList)
+                executeStmts(labelTable[str(self.exprs[-1])], symTable, labelTable, stmtList)
 
         if self.keyword == "print":
             for x in self.exprs:
@@ -110,7 +110,8 @@ def parseFile(file, labelTable, stmtList):
             # if there is a label
             if lineParsed[0].endswith(':'):
                 # store label without colon
-                labelTable[lineParsed[0][:-1]] = lineNum
+                labelTable[str(lineParsed[0][:-1])] = lineNum
+                # lineParsed = lineParsed[1:]
                 # rest of statement will start one index over
                 labelOffset = 1
         
@@ -179,7 +180,7 @@ def isNumber(s):
 
 def executeStmts(lineNum, symTable, labelTable, stmtList):
     for x in stmtList[(lineNum - 1):(len(stmtList))]:
-        x.perform(symTable, labelTable)
+        x.perform(symTable, labelTable, stmtList)
     
 def main():
     # read 1st argument when calling script

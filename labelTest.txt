@@ -1,0 +1,5 @@
+let x = 1
+let y = 2
+if y > x goto loop
+print x
+loop: print y
