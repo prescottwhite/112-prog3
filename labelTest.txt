@@ -2,4 +2,10 @@ let x = 1
 let y = 1000
 loop: let y = y / 10
 print y
+
+
+
+
+
+
 if x < y goto loop

@@ -1,1 +1,2 @@
-print "first string", "second string"
+print "first string", "second string", "third string"
+print 1, "second in statement", 3, 1 + 3

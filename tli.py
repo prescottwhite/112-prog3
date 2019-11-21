@@ -104,8 +104,10 @@ class Stmt:
                 return labelTable[str(self.exprs[-1])]
 
         elif self.keyword == "print":
+            strBuilder = ""
             for x in self.exprs:
-                print(x.eval(symTable, labelTable))
+                strBuilder = strBuilder + str(x.eval(symTable, labelTable)) + " "
+            print(strBuilder)
             return self.lineNum + 1
 
         elif self.keyword == "input":
@@ -114,9 +116,9 @@ class Stmt:
 
 def parseFile(file, labelTable, stmtList):
     lineNum = 0
-    for x in file:
+    for line in file:
         lineNum += 1
-        lineParsed = x.split()
+        lineParsed = line.split()
         exprList = []
         
         # if line is not empty
@@ -138,7 +140,10 @@ def parseFile(file, labelTable, stmtList):
                 exprList.append(Expr(lineParsed[0], "var"))
                 # if form is 'let variable = value' where value is either float or string
                 if (numTokens) == 2:
-                    exprList.append(Expr(lineParsed[1], "num"))
+                    if isNumber(lineParsed[1]):
+                        exprList.append(Expr(lineParsed[1], "num"))
+                    else:
+                        exprList.append(Expr(lineParsed[1], "var"))
                 # if form is 'let variable = value operator value' where '=' is removed and value is either float or variable
                 elif (numTokens) == 4:
                     exprList.append(Expr(lineParsed[1], lineParsed[2], lineParsed[3]))
@@ -160,19 +165,22 @@ def parseFile(file, labelTable, stmtList):
                 stmtList.append(Stmt(lineNum, keyword, exprList))
         
             elif keyword == "print":
-                lineParsed.remove("print")
+                line = line[6:]
+                lineParsed = line.split(',')
                 for x in lineParsed:
-                    if x.endswith(','):
-                        # remove comma from expression
-                        x = x[:-1]
-                    if (x.startswith('"')) and (x.endswith('"')):
-                        exprList.append(Expr(x, "str"))
-                    elif isNumber(x):
-                        exprList.append(Expr(x, "num"))
+                    x = x.strip()
+                    if x.startswith('"') and x.endswith('"'):
+                        exprList.append(Expr(x[1:-1], "str"))
+                    elif len(x) == 1:
+                        if isNumber(x):
+                            exprList.append(Expr(x, "num"))
+                        else:
+                            exprList.append(Expr(x, "var"))
                     else:
-                        exprList.append(Expr(x, "var"))
+                        x = x.split()
+                        exprList.append(Expr(x[0], x[1], x[2]))
                 stmtList.append(Stmt(lineNum, keyword, exprList))
-                                        
+        
             elif keyword == "input":
                 lineParsed.remove("input")
                 exprList.append(Expr(lineParsed[0], "var"))
