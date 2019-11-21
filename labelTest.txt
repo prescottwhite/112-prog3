@@ -1,5 +1,5 @@
-let x = 1.5
-let y = 5
-loop: print x
-let x = x + 1
+let x = 1
+let y = 1000
+loop: let y = y / 10
+print y
 if x < y goto loop

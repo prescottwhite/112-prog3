@@ -26,54 +26,53 @@ class Expr:
         elif (self.operator == "str"):
             return str(self.op1)
         elif self.operator == "var":
-            return symTable[self.op1]
+            return float(symTable[self.op1])
 
         # if variable is being used in expression
         if not(isNumber(self.op1)):
-            self.op1 = float(symTable[self.op1])
+            x = float(symTable[self.op1])
         else:
-            self.op1 = float(self.op1)
+            x = float(self.op1)
         if not(isNumber(self.op2)):
-            self.op2 = float(symTable[self.op2])
+            y = float(symTable[self.op2])
         else:
-            self.op2 = float(self.op2)
+            y = float(self.op2)
         
-
         if self.operator == "+":
-            return (float(self.op1) + float(self.op2))
+            return (x + y)
         elif self.operator == "-":
-            return (float(self.op1) - float(self.op2))
+            return (x - y)
         elif self.operator == "*":
-            return (float(self.op1) * float(self.op2))
+            return (x * y)
         elif self.operator == "/":
-            return (float(self.op1) / float(self.op2))
+            return (x / y)
         elif self.operator == "==":
-            if (self.op1 == self.op2):
+            if (x == y):
                 return 1
             else:
                 return 0
         elif self.operator == "<":
-            if (self.op1 < self.op2):
+            if (x < y):
                 return 1
             else:
                 return 0
         elif self.operator == ">":
-            if (self.op1 > self.op2):
+            if (x > y):
                 return 1
             else:
                 return 0
         elif self.operator == "<=":
-            if (self.op1 <= self.op2):
+            if (x <= y):
                 return 1
             else:
                 return 0
         elif self.operator == ">=":
-            if (self.op1 >= self.op2):
+            if (x >= y):
                 return 1
             else:
                 return 0
         elif self.operator == "!=":
-            if (self.op1 != self.op2):
+            if (x != y):
                 return 1
             else:
                 return 0
@@ -93,22 +92,25 @@ class Stmt:
         return self.keyword + others
 
     # perform/execute this statement given the environment of the symTable
-    def perform(self, symTable, labelTable, stmtList):
+    def perform(self, symTable, labelTable):
         if self.keyword == "let":
             symTable[str(self.exprs[0])] = self.exprs[1].eval(symTable, labelTable)
+            return self.lineNum + 1
 
-        if self.keyword == "if":
+        elif self.keyword == "if":
             if (self.exprs[0].eval(symTable, labelTable)) == 0:
-                executeStmts(self.lineNum + 1, symTable, labelTable, stmtList)
+                return self.lineNum + 1
             else:
-                executeStmts(labelTable[str(self.exprs[-1])], symTable, labelTable, stmtList)
+                return labelTable[str(self.exprs[-1])]
 
-        if self.keyword == "print":
+        elif self.keyword == "print":
             for x in self.exprs:
                 print(x.eval(symTable, labelTable))
+            return self.lineNum + 1
 
-        if self.keyword == "input":
+        elif self.keyword == "input":
             symTable[str(self.exprs[0])] = input()
+            return self.lineNum + 1
 
 def parseFile(file, labelTable, stmtList):
     lineNum = 0
@@ -186,9 +188,12 @@ def isNumber(s):
     except ValueError:
         return False
 
-def executeStmts(lineNum, symTable, labelTable, stmtList):
-    for x in stmtList[(lineNum - 1):(len(stmtList))]:
-        x.perform(symTable, labelTable, stmtList)
+def executeStmts(symTable, labelTable, stmtList):
+    index = 1
+    while (index <= len(stmtList)):
+        index = stmtList[index - 1].perform(symTable, labelTable)
+    # for x in stmtList[(lineNum - 1):(len(stmtList))]:
+        # x.perform(symTable, labelTable, stmtList)
     
 def main():
     # read 1st argument when calling script
@@ -204,6 +209,6 @@ def main():
     stmtList = []
 
     parseFile(file, labelTable, stmtList)
-    executeStmts(lineNum, symTable, labelTable, stmtList)
+    executeStmts(symTable, labelTable, stmtList)
 
 main()
