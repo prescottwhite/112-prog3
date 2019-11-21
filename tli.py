@@ -93,68 +93,79 @@ class Stmt:
             for x in self.exprs:
                 print(x.eval(symTable, labelTable))
 
+        if self.keyword == "input":
+            symTable[str(self.exprs[0])] = input()
+
 def parseFile(file, labelTable, stmtList):
     lineNum = 0
     for x in file:
-        labelIndex = 0
+        labelOffset = 0
         lineNum += 1
         lineParsed = x.split()
-        numTokens = len(lineParsed)
         exprList = []
         
         # if line is not empty
-        if (numTokens != 0):
+        if (len(lineParsed) != 0):
         
             # if there is a label
             if lineParsed[0].endswith(':'):
                 # store label without colon
                 labelTable[lineParsed[0][:-1]] = lineNum
                 # rest of statement will start one index over
-                labelIndex = 1
+                labelOffset = 1
         
-            exprIndex = labelIndex + 1
-            keyword = lineParsed[labelIndex]
+            keyword = lineParsed[labelOffset]
         
             if keyword == "let":
+                lineParsed.remove("let")
                 lineParsed.remove("=")
+                numTokens = len(lineParsed)
                 # add variable name
-                exprList.append(Expr(lineParsed[exprIndex], "var"))
-                # if form is 'let variable = value' where '=' is removed and value is either float or string
-                if (numTokens - labelIndex) == 4:
-                    if isNumber(lineParsed[exprIndex + 1]):
-                        exprList.append(Expr(lineParsed[exprIndex + 1], "num"))
+                exprList.append(Expr(lineParsed[labelOffset], "var"))
+                # if form is 'let variable = value' where value is either float or string
+                if (numTokens - labelOffset) == 2:
+                    if isNumber(lineParsed[labelOffset + 1]):
+                        exprList.append(Expr(lineParsed[labelOffset + 1], "num"))
                     else:
-                        exprList.append(Expr(lineParsed[exprIndex + 1], "str"))
+                        exprList.append(Expr(lineParsed[labelOffset + 1], "str"))
                 # if form is 'let variable = value operator value' where '=' is removed and value is either float or variable
-                elif (numTokens - labelIndex) == 6:
-                    exprList.append(Expr(lineParsed[exprIndex + 1], lineParsed[exprIndex + 2], lineParsed[exprIndex + 3]))
+                elif (numTokens - labelOffset) == 4:
+                    exprList.append(Expr(lineParsed[labelOffset + 1], lineParsed[labelOffset + 2], lineParsed[labelOffset + 3]))
                 stmtList.append(Stmt(lineNum, keyword, exprList))
         
             elif keyword == "if":
+                lineParsed.remove("if")
                 lineParsed.remove("goto")
-                if (numTokens - labelIndex) == 4:
-                    if isNumber(lineParsed[exprIndex]):
-                        exprList.append(Expr(lineParsed[exprIndex], "num"))
+                numTokens = len(lineParsed)
+                if (numTokens - labelOffset) == 2:
+                    if isNumber(lineParsed[labelOffset]):
+                        exprList.append(Expr(lineParsed[labelOffset], "num"))
                     else:
-                        exprList.append(Expr(lineParsed[exprIndex], "str"))
-                elif (numTokens - labelIndex) == 6:
-                    exprList.append(Expr(lineParsed[exprIndex], lineParsed[exprIndex + 1], lineParsed[exprIndex + 2]))
+                        exprList.append(Expr(lineParsed[labelOffset], "var"))
+                elif (numTokens - labelOffset) == 4:
+                    exprList.append(Expr(lineParsed[labelOffset], lineParsed[labelOffset + 1], lineParsed[labelOffset + 2]))
                 # add label to end of statement, this is the label to goto if expression is true
                 exprList.append(Expr(lineParsed[-1], "str"))
                 stmtList.append(Stmt(lineNum, keyword, exprList))
         
             elif keyword == "print":
-                if (len(lineParsed)) == 2:
-                    if isNumber(lineParsed[exprIndex]):
-                        exprList.append(Expr(lineParsed[exprIndex], "num"))
+                lineParsed.remove("print")
+                for x in lineParsed:
+                    if x.endswith(','):
+                        # remove comma from expression
+                        x = x[:-1]
+                    if (x.startswith('"')) and (x.endswith('"')):
+                        exprList.append(Expr(x, "str"))
+                    elif isNumber(x):
+                        exprList.append(Expr(x, "num"))
                     else:
-                        exprList.append(Expr(lineParsed[exprIndex], "var"))
-                    stmtList.append(Stmt(lineNum, keyword, exprList))
-                    
-            # elif keyword == "input":
-                # # input logic
-
-            # else:
+                        exprList.append(Expr(x, "var"))
+                stmtList.append(Stmt(lineNum, keyword, exprList))
+                                        
+            elif keyword == "input":
+                lineParsed.remove("input")
+                exprList.append(Expr(lineParsed[0], "var"))
+                stmtList.append(Stmt(lineNum, keyword, exprList))
 
 
 # found on StackOverflow
@@ -167,7 +178,7 @@ def isNumber(s):
         return False
 
 def executeStmts(lineNum, symTable, labelTable, stmtList):
-    for x in stmtList:
+    for x in stmtList[(lineNum - 1):(len(stmtList))]:
         x.perform(symTable, labelTable)
     
 def main():

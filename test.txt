@@ -1,6 +1,0 @@
-let x = 5
-let y = 2
-if x == 5 goto labelTwo
-
-labelOne: print y
-labelTwo: print x
