@@ -7,17 +7,16 @@ import sys
 # constant numbers, constant strings, variable names, and binary expressions
 # operators: num, str, var, +, -, *, /, ==, <, >, <=, >=, !=
 class Expr:
-    legalOps = ["num", "str", "var", "+", "-", "*", "/", "==", "<", ">", "<=", ">=", "!="]
     def __init__(self, lineNum, op1, operator, op2=None):
+        self.legalOps = ["num", "str", "var", "+", "-", "*", "/", "==", "<", ">", "<=", ">=", "!="]
         self.op1 = op1
         self.operator = operator
-        if not(self.operator in Expr.legalOps):
+        if not(self.operator in self.legalOps):
             syntaxError(lineNum)
         self.op2 = op2
 
     def __str__(self):
         if self.op2 == None:
-            # return self.operator + " " + self.op1
             return self.op1
         else:
             return self.op1 + " " + self.operator + " " +  self.op2
@@ -29,25 +28,15 @@ class Expr:
         elif (self.operator == "str"):
             return str(self.op1)
         elif self.operator == "var":
-            try:
-                varVal = float(symTable[self.op1])
-                return varVal
-            except KeyError:
-                varError(self.op1, lineNum)
+            return self.findVar(lineNum, self.op1, symTable)
 
         # if variable is being used in expression
         if not(isNumber(self.op1)):
-            try:
-                x = float(symTable[self.op1])
-            except KeyError:
-                varError(self.op1, lineNum)
+            x = self.findVar(lineNum, self.op1, symTable)
         else:
             x = float(self.op1)
         if not(isNumber(self.op2)):
-            try:
-                y = float(symTable[self.op2])
-            except KeyError:
-                varError(self.op2, lineNum)
+            y = self.findVar(lineNum, self.op2, symTable)
         else:
             y = float(self.op2)
         
@@ -90,6 +79,12 @@ class Expr:
             else:
                 return 0
 
+    def findVar(self, lineNum, op, symTable):
+        try:
+            varVal = float(symTable[op])
+            return varVal
+        except KeyError:
+            varError(op, lineNum)
 
 # used to store a parsed TL statement
 class Stmt:
@@ -169,6 +164,8 @@ def parseFile(file, labelTable, stmtList):
                 # if form is 'let variable = value operator value' where '=' is removed and value is either float or variable
                 elif (numTokens) == 4:
                     exprList.append(Expr(lineNum, lineParsed[1], lineParsed[2], lineParsed[3]))
+                else:
+                    syntaxError(lineNum)
                 stmtList.append(Stmt(lineNum, keyword, exprList))
         
             elif keyword == "if":
@@ -182,16 +179,20 @@ def parseFile(file, labelTable, stmtList):
                         exprList.append(Expr(lineNum, lineParsed[0], "var"))
                 elif (numTokens) == 4:
                     exprList.append(Expr(lineNum, lineParsed[0], lineParsed[1], lineParsed[2]))
+                else:
+                    syntaxError(lineNum)
                 # add label to end of statement, this is the label to goto if expression is true
                 exprList.append(Expr(lineNum, lineParsed[-1], "str"))
                 stmtList.append(Stmt(lineNum, keyword, exprList))
         
             elif keyword == "print":
+                # stitch parsed line up to preserve quotes that were split in the middle
                 line = " ".join(lineParsed)
-                # remove print
+                # remove 'print'
                 line = line[5:]
                 # split on comma
                 lineParsed = line.split(',')
+                # for each expression
                 for x in lineParsed:
                     x = x.strip()
                     if x.startswith('"') and x.endswith('"'):
@@ -248,8 +249,6 @@ def executeStmts(symTable, labelTable, stmtList):
     index = 1
     while (index <= len(stmtList)):
         index = stmtList[index - 1].perform(symTable, labelTable)
-    # for x in stmtList[(lineNum - 1):(len(stmtList))]:
-        # x.perform(symTable, labelTable, stmtList)
     
 def main():
     # read 1st argument when calling script
