@@ -128,8 +128,13 @@ class Stmt:
             return self.lineNum + 1
 
         elif self.keyword == "input":
-            symTable[str(self.exprs[0])] = input()
-            return self.lineNum + 1
+            inputNum = input()
+            if isNumber(inputNum):
+                symTable[str(self.exprs[0])] = inputNum
+                return self.lineNum + 1
+            else:
+                inputError()
+
 
 def parseFile(file, labelTable, stmtList):
     lineNum = 0
@@ -232,6 +237,10 @@ def gotoError(label, lineNum):
 
 def varError(varName, lineNum):
     print("Undefined variable " + str(varName) + " at line " + str(lineNum) + ".")
+    sys.exit()
+
+def inputError():
+    print("Illegal or missing input")
     sys.exit()
 
 
