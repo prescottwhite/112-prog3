@@ -205,14 +205,19 @@ def parseFile(file, labelTable, stmtList):
                                 exprList.append(Expr(lineNum, x[0], "num"))
                             else:
                                 exprList.append(Expr(lineNum, x[0], "var"))
-                        else:
+                        elif len(x) == 3:
                             exprList.append(Expr(lineNum, x[0], x[1], x[2]))
+                        else:
+                            syntaxError(lineNum)
                 stmtList.append(Stmt(lineNum, keyword, exprList))
         
             elif keyword == "input":
                 lineParsed.remove("input")
-                exprList.append(Expr(lineNum, lineParsed[0], "var"))
-                stmtList.append(Stmt(lineNum, keyword, exprList))
+                if len(lineParsed) == 1:
+                    exprList.append(Expr(lineNum, lineParsed[0], "var"))
+                    stmtList.append(Stmt(lineNum, keyword, exprList))
+                else:
+                    syntaxError(lineNum)
 
             else:
                 syntaxError(lineNum)
