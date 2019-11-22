@@ -100,14 +100,14 @@ class Stmt:
         return self.keyword + others
 
     # perform/execute this statement given the environment of the symTable
-    def perform(self, symTable, labelTable):
+    def perform(self, index, symTable, labelTable):
         if self.keyword == "let":
             symTable[str(self.exprs[0])] = self.exprs[1].eval(self.lineNum, symTable, labelTable)
-            return self.lineNum + 1
+            return index + 1
 
         elif self.keyword == "if":
             if (self.exprs[0].eval(self.lineNum, symTable, labelTable)) == 0:
-                return self.lineNum + 1
+                return index + 1
             else:
                 try:
                     labelNum = labelTable[str(self.exprs[-1])]
@@ -120,13 +120,13 @@ class Stmt:
             for x in self.exprs:
                 strBuilder = strBuilder + str(x.eval(self.lineNum, symTable, labelTable)) + " "
             print(strBuilder)
-            return self.lineNum + 1
+            return index + 1
 
         elif self.keyword == "input":
             inputNum = input()
             if isNumber(inputNum):
                 symTable[str(self.exprs[0])] = inputNum
-                return self.lineNum + 1
+                return index + 1
             else:
                 inputError()
 
@@ -144,7 +144,8 @@ def parseFile(file, labelTable, stmtList):
             # if there is a label
             if lineParsed[0].endswith(':'):
                 # store label without colon
-                labelTable[str(lineParsed[0][:-1])] = lineNum
+                # use index in stmtList directly
+                labelTable[str(lineParsed[0][:-1])] = len(stmtList)
                 lineParsed = lineParsed[1:]
         
             keyword = lineParsed[0]
@@ -246,9 +247,9 @@ def inputError():
 
 
 def executeStmts(symTable, labelTable, stmtList):
-    index = 1
-    while (index <= len(stmtList)):
-        index = stmtList[index - 1].perform(symTable, labelTable)
+    index = 0
+    while (index < len(stmtList)):
+        index = stmtList[index].perform(index, symTable, labelTable)
     
 def main():
     # read 1st argument when calling script
